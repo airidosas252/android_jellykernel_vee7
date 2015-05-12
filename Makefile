@@ -378,7 +378,7 @@ KBUILD_CFLAGS := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		-Werror-implicit-function-declaration \
 		-Wno-format-security \
 		-fno-delete-null-pointer-checks \
-		-marm -mfloat-abi=hard -march=armv7-a \
+		-marm -mfloat-abi=soft -march=armv7-a \
 		-mfpu=neon -ffast-math -pipe \
 		-funswitch-loops -fpredictive-commoning \
 		-fgcse-after-reload -fno-tree-vectorize \
