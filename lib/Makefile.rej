@@ -1,0 +1,13 @@
+--- lib/Makefile
++++ lib/Makefile
+@@ -117,6 +117,10 @@
+ 
+ obj-$(CONFIG_LLIST) += llist.o
+ 
++CFLAGS_snappy.o += $(call cc-disable-warning, declaration-after-statement) \
++                   -DNDEBUG=1
++obj-$(CONFIG_SNAPPY) += snappy.o
++
+ hostprogs-y        := gen_crc32table
+ clean-files        := crc32table.h
+ 
