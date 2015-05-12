@@ -352,16 +352,15 @@ CC		= $(srctree)/scripts/gcc-wrapper.py $(REAL_CC)
 CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 		  -Wbitwise -Wno-return-void $(CF)
 
-MODFLAGS = -mcpu=cortex-a5 -mtune=cortex-a5 -march=armv7-a -mfpu=neon-vfpv4 \
--funsafe-math-optimizations -funsafe-loop-optimizations -funswitch-loops \
--fpredictive-commoning -fgcse-after-reload -fipa-cp-clone -fsingle-precision-constant \
--pipe -finline-functions -ffast-math -fvect-cost-model
+MODFLAGS = -O3 -ffast-math -fgcse-lm -fgcse-sm -fsched-spec-load 
+	   -fforce-addr -fsingle-precision-constant -mtune=cortex-a5
+	   -marm -mfpu=neon-vfpv4 -mcpu=cortex-a5
 
 CFLAGS_MODULE = $(MODFLAGS) -DMODULE
 AFLAGS_MODULE = $(MODFLAGS) -DMODULE --strip-debug
 LDFLAGS_MODULE = -T $(srctree)/scripts/module-common.lds
-CFLAGS_KERNEL = -O3 $(MODFLAGS) -w
-AFLAGS_KERNEL = -O3 $(MODFLAGS) -w
+CFLAGS_KERNEL = $(MODFLAGS) -w
+AFLAGS_KERNEL = $(MODFLAGS) -w
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -379,7 +378,7 @@ KBUILD_CFLAGS := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		-Werror-implicit-function-declaration \
 		-Wno-format-security \
 		-fno-delete-null-pointer-checks \
-		-marm -mfloat-abi=softfp -march=armv7-a \
+		-marm -mfloat-abi=hard -march=armv7-a \
 		-mfpu=neon -ffast-math -pipe \
 		-funswitch-loops -fpredictive-commoning \
 		-fgcse-after-reload -fno-tree-vectorize \
