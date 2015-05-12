@@ -203,4 +203,8 @@ static void dyn_fsync_exit(void)
 }
 
 module_init(dyn_fsync_init);
+<<<<<<< HEAD
 module_exit(dyn_fsync_exit);
+=======
+module_exit(dyn_fsync_exit);
+>>>>>>> 2699a66... fs/dyn_sync_cntrl: dynamic sync control
