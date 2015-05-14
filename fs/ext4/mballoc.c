@@ -5031,6 +5031,8 @@ int ext4_trim_fs(struct super_block *sb, struct fstrim_range *range)
 			trimmed += cnt;
 		}
 
+		trimmed += cnt;
+
 		/*
 		 * For every group except the first one, we are sure
 		 * that the first cluster to discard will be cluster #0.
