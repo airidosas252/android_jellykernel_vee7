@@ -37,6 +37,56 @@ struct ion_iommu_priv_data {
 	unsigned long size;
 };
 
+#define MAX_VMAP_RETRIES 10
+
+static const unsigned int orders[] = {8, 4, 0};
+static const int num_orders = ARRAY_SIZE(orders);
+
+struct page_info {
+	struct page *page;
+	unsigned int order;
+	struct list_head list;
+};
+
+static unsigned int order_to_size(int order)
+{
+	return PAGE_SIZE << order;
+}
+
+static struct page_info *alloc_largest_available(unsigned long size,
+						unsigned int max_order)
+{
+	struct page *page;
+	struct page_info *info;
+	int i;
+
+	for (i = 0; i < num_orders; i++) {
+		gfp_t gfp;
+		if (size < order_to_size(orders[i]))
+			continue;
+		if (max_order < orders[i])
+			continue;
+
+		gfp = __GFP_HIGHMEM;
+
+		if (orders[i]) {
+			gfp |= __GFP_COMP | __GFP_NORETRY |
+			       __GFP_NO_KSWAPD | __GFP_NOWARN;
+		} else {
+			gfp |= GFP_KERNEL;
+		}
+		page = alloc_pages(gfp, orders[i]);
+		if (!page)
+			continue;
+
+		info = kmalloc(sizeof(struct page_info), GFP_KERNEL);
+		info->page = page;
+		info->order = orders[i];
+		return info;
+	}
+	return NULL;
+}
+
 static int ion_iommu_heap_allocate(struct ion_heap *heap,
 				      struct ion_buffer *buffer,
 				      unsigned long size, unsigned long align,
