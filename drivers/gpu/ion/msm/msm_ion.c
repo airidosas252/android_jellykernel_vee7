@@ -27,6 +27,74 @@ static struct ion_device *idev;
 static int num_heaps;
 static struct ion_heap **heaps;
 
+struct ion_heap_desc {
+	unsigned int id;
+	enum ion_heap_type type;
+	const char *name;
+	unsigned int permission_type;
+};
+
+
+static struct ion_heap_desc ion_heap_meta[] = {
+	{
+		.id	= ION_SYSTEM_HEAP_ID,
+		.type	= ION_HEAP_TYPE_SYSTEM,
+		.name	= ION_VMALLOC_HEAP_NAME,
+	},
+	{
+		.id	= ION_SYSTEM_CONTIG_HEAP_ID,
+		.type	= ION_HEAP_TYPE_SYSTEM_CONTIG,
+		.name	= ION_KMALLOC_HEAP_NAME,
+	},
+	{
+		.id	= ION_CP_MM_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CP,
+		.name	= ION_MM_HEAP_NAME,
+		.permission_type = IPT_TYPE_MM_CARVEOUT,
+	},
+	{
+		.id	= ION_MM_FIRMWARE_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CARVEOUT,
+		.name	= ION_MM_FIRMWARE_HEAP_NAME,
+	},
+	{
+		.id	= ION_CP_MFC_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CP,
+		.name	= ION_MFC_HEAP_NAME,
+		.permission_type = IPT_TYPE_MFC_SHAREDMEM,
+	},
+	{
+		.id	= ION_SF_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CARVEOUT,
+		.name	= ION_SF_HEAP_NAME,
+	},
+	{
+		.id	= ION_IOMMU_HEAP_ID,
+		.type	= ION_HEAP_TYPE_IOMMU,
+		.name	= ION_IOMMU_HEAP_NAME,
+	},
+	{
+		.id	= ION_QSECOM_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CARVEOUT,
+		.name	= ION_QSECOM_HEAP_NAME,
+	},
+	{
+		.id	= ION_AUDIO_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CARVEOUT,
+		.name	= ION_AUDIO_HEAP_NAME,
+	},
+	{
+		.id	= ION_CP_WB_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CP,
+		.name	= ION_WB_HEAP_NAME,
+	},
+	{
+		.id	= ION_CAMERA_HEAP_ID,
+		.type	= ION_HEAP_TYPE_CARVEOUT,
+		.name	= ION_CAMERA_HEAP_NAME,
+	},
+};
+
 struct ion_client *msm_ion_client_create(unsigned int heap_mask,
 					const char *name)
 {
