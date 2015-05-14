@@ -779,42 +779,6 @@ static int adreno_start(struct kgsl_device *device, unsigned int init_ram)
 			mod_timer(&device->idle_timer, jiffies + FIRST_TIMEOUT);
 		return 0;
 	}
-	status = adreno_ringbuffer_start(&adreno_dev->ringbuffer);
-	if (status)
-		goto error_irq_off;
-
-	/*
-	 * While recovery is on we do not want timer to
-	 * fire and attempt to change any device state
-	 */
-
-	if (KGSL_STATE_DUMP_AND_FT != device->state)
-		mod_timer(&device->idle_timer, jiffies + FIRST_TIMEOUT);
-
-	if (!adreno_is_a2xx(adreno_dev))
- 		adreno_perfcounter_start(adreno_dev);
-	else {
-		unsigned int reg;
-
-		kgsl_regread(device, REG_RBBM_PM_OVERRIDE2, &reg);
-		kgsl_regwrite(device, REG_RBBM_PM_OVERRIDE2, (reg | 0x40));
-
-		/*
-		 * Select SP_ALU_INSTR_EXEC (0x85) to get number of
-		 * ALU instructions executed.
-		 */
-		kgsl_regwrite(device, REG_SQ_PERFCOUNTER3_SELECT, 0x85);
-
-		kgsl_regwrite(device, REG_CP_PERFMON_CNTL,
-			REG_PERF_MODE_CNT | REG_PERF_STATE_ENABLE);
-
-		ft_detect_regs[6] = REG_SQ_PERFCOUNTER3_LO;
-		ft_detect_regs[7] = REG_SQ_PERFCOUNTER3_HI;
-	}
-
-	device->reset_counter++;
-
-	return 0;
 
 	kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_OFF);
 	kgsl_mmu_stop(&device->mmu);
