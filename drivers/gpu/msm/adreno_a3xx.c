@@ -2671,26 +2671,22 @@ static void a3xx_irq_control(struct adreno_device *adreno_dev, int state)
 static unsigned int a3xx_busy_cycles(struct adreno_device *adreno_dev)
 {
 	struct kgsl_device *device = &adreno_dev->dev;
-	unsigned int reg, val;
-
-	/* Freeze the counter */
-	adreno_regread(device, A3XX_RBBM_RBBM_CTL, &reg);
-	reg &= ~RBBM_RBBM_CTL_ENABLE_PWR_CTR1;
-	adreno_regwrite(device, A3XX_RBBM_RBBM_CTL, reg);
+	unsigned int val;
+	unsigned int ret = 0;
 
 	/* Read the value */
 	adreno_regread(device, A3XX_RBBM_PERFCTR_PWR_1_LO, &val);
 
-	/* Reset the counter */
-	reg |= RBBM_RBBM_CTL_RESET_PWR_CTR1;
-	adreno_regwrite(device, A3XX_RBBM_RBBM_CTL, reg);
+	/* Return 0 for the first read */
+	if (adreno_dev->gpu_cycles != 0) {
+		if (val < adreno_dev->gpu_cycles)
+			ret = (0xFFFFFFFF - adreno_dev->gpu_cycles) + val;
+		else
+			ret = val - adreno_dev->gpu_cycles;
+	}
 
-	/* Re-enable the counter */
-	reg &= ~RBBM_RBBM_CTL_RESET_PWR_CTR1;
-	reg |= RBBM_RBBM_CTL_ENABLE_PWR_CTR1;
-	adreno_regwrite(device, A3XX_RBBM_RBBM_CTL, reg);
-
-	return val;
+	adreno_dev->gpu_cycles = val;
+	return ret;
 }
 
 static void a3xx_start(struct adreno_device *adreno_dev)
@@ -2709,6 +2705,29 @@ static void a3xx_start(struct adreno_device *adreno_dev)
 
 	/* Enable WR-REQ */
 	adreno_regwrite(device, A3XX_VBIF_GATE_OFF_WRREQ_EN, 0x000000FF);
+	{ A3XX_VBIF_GATE_OFF_WRREQ_EN, 0x00003F },
+	/* Set up round robin arbitration between both AXI ports */
+	{ A3XX_VBIF_ARB_CTL, 0x00000030 },
+	/* Set up VBIF_ROUND_ROBIN_QOS_ARB */
+	{ A3XX_VBIF_ROUND_ROBIN_QOS_ARB, 0x0001 },
+	/* Set up AOOO */
+	{ A3XX_VBIF_OUT_AXI_AOOO_EN, 0x0000003F },
+	{ A3XX_VBIF_OUT_AXI_AOOO, 0x003F003F },
+	/* Enable 1K sort */
+	{ A3XX_VBIF_ABIT_SORT, 0x0001003F },
+	{ A3XX_VBIF_ABIT_SORT_CONF, 0x000000A4 },
+	/* Disable VBIF clock gating. This is to enable AXI running
+	 * higher frequency than GPU.
+	 */
+	{ A3XX_VBIF_CLKON, 1 },
+	{0, 0},
+};
+
+static void a3xx_start(struct adreno_device *adreno_dev)
+{
+	struct kgsl_device *device = &adreno_dev->dev;
+	struct a3xx_vbif_data *vbif = NULL;
+        unsigned int reg;
 
 	/* Set up round robin arbitration between both AXI ports */
 	adreno_regwrite(device, A3XX_VBIF_ARB_CTL, 0x00000030);
@@ -2750,6 +2769,49 @@ static void a3xx_start(struct adreno_device *adreno_dev)
 	adreno_regwrite(device, A3XX_RBBM_CLOCK_CTL,
 			A3XX_RBBM_CLOCK_CTL_DEFAULT);
 
+	/* Set the OCMEM base address for A330 */
+	if (adreno_is_a330(adreno_dev)) {
+		adreno_regwrite(device, A3XX_RB_GMEM_BASE_ADDR,
+			(unsigned int)(adreno_dev->ocmem_base >> 14));
+	}
+
+	/* Turn on performance counters */
+	adreno_regwrite(device, A3XX_RBBM_PERFCTR_CTL, 0x01);
+
+	/*
+	 * Set SP perfcounter 5 to count SP_ALU_ACTIVE_CYCLES, it includes
+	 * all ALU instruction execution regardless precision or shader ID.
+	 * Set SP perfcounter 6 to count SP0_ICL1_MISSES, It counts
+	 * USP L1 instruction miss request.
+	 * Set SP perfcounter 7 to count SP_FS_FULL_ALU_INSTRUCTIONS, it
+	 * counts USP flow control instruction execution.
+	 * we will use this to augment our hang detection
+	 */
+	if (adreno_dev->fast_hang_detect) {
+		adreno_regwrite(device, A3XX_SP_PERFCOUNTER5_SELECT,
+			SP_ALU_ACTIVE_CYCLES);
+		adreno_regwrite(device, A3XX_SP_PERFCOUNTER6_SELECT,
+			SP0_ICL1_MISSES);
+		adreno_regwrite(device, A3XX_SP_PERFCOUNTER7_SELECT,
+			SP_FS_CFLOW_INSTRUCTIONS);
+	}
+
+	adreno_regwrite(device, A3XX_SP_PERFCOUNTER7_SELECT,
+		SP_FS_FULL_ALU_INSTRUCTIONS);
+
+	/* Turn on the GPU busy counter and let it run free */
+
+	adreno_dev->gpu_cycles = 0;
+
+	adreno_regread(device, A3XX_RBBM_RBBM_CTL, &reg);
+	reg |= RBBM_RBBM_CTL_RESET_PWR_CTR1;
+	adreno_regwrite(device, A3XX_RBBM_RBBM_CTL, reg);
+	reg &= ~RBBM_RBBM_CTL_RESET_PWR_CTR1;
+	reg |= RBBM_RBBM_CTL_ENABLE_PWR_CTR1;
+	adreno_regwrite(device, A3XX_RBBM_RBBM_CTL, reg);
+
+	if (adreno_is_a305(adreno_dev))
+		a305_create_on_resume_ib(adreno_dev);
 }
 
 /* Defined in adreno_a3xx_snapshot.c */

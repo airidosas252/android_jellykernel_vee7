@@ -88,6 +88,19 @@ struct adreno_device {
 	unsigned int instruction_size;
 	unsigned int ib_check_level;
 	unsigned int fast_hang_detect;
+	unsigned int ft_policy;
+	unsigned int ft_user_control;
+	unsigned int long_ib_detect;
+	unsigned int long_ib;
+	unsigned int long_ib_ts;
+	unsigned int ft_pf_policy;
+	unsigned int gpulist_index;
+	struct ocmem_buf *ocmem_hdl;
+	unsigned int ocmem_base;
+	unsigned int gpu_cycles;
+	struct kgsl_memdesc on_resume_cmd;
+	unsigned int on_resume_ib[3];
+	bool on_resume_issueib;
 };
 
 struct adreno_gpudev {
