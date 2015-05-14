@@ -213,8 +213,6 @@ static int ion_iommu_heap_allocate(struct ion_heap *heap,
 		if (!ION_IS_CACHED(flags))
 			dma_sync_sg_for_device(NULL, table->sgl, table->nents,
 						DMA_BIDIRECTIONAL);
-
->>>>>>> fbe9a3b... gpu: ion: allocate huge pages in iommu heap
 		buffer->priv_virt = data;
 		return 0;
 
