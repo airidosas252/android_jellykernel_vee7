@@ -398,6 +398,7 @@ void cpu_init(void)
 	 * boot cpu, smp_prepare_boot_cpu is called after percpu area setup.
 	 */
 	set_my_cpu_offset(per_cpu_offset(cpu));
+ 	set_my_cpu_offset(per_cpu_offset(cpu));
 
 	cpu_proc_init();
 
