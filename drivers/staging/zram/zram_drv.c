@@ -109,8 +109,6 @@ static ssize_t zero_pages_show(struct device *dev,
 
 static ssize_t orig_data_size_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
-=======
-static void zram_stat64_add(struct zram *zram, u64 *v, u64 inc)
 {
 	struct zram *zram = dev_to_zram(dev);
 
@@ -295,8 +293,6 @@ static void zram_free_page(struct zram *zram, size_t index)
 		 */
 		if (zram_test_flag(meta, index, ZRAM_ZERO)) {
 			zram_clear_flag(meta, index, ZRAM_ZERO);
-		if (zram_test_flag(zram, index, ZRAM_ZERO)) {
-			zram_clear_flag(zram, index, ZRAM_ZERO);
 			zram->stats.pages_zero--;
 		}
 		return;
@@ -311,9 +307,8 @@ static void zram_free_page(struct zram *zram, size_t index)
 		zram->stats.good_compress--;
 
 	atomic64_sub(meta->table[index].size, &zram->stats.compr_size);
-	zram_stat64_sub(zram, &zram->stats.compr_size,
-			zram->table[index].size);
 	zram->stats.pages_stored--;
+
 	meta->table[index].handle = 0;
 	meta->table[index].size = 0;
 }
@@ -442,10 +437,6 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 
 		zram->stats.pages_zero++;
 		zram_set_flag(meta, index, ZRAM_ZERO);
-		if (!is_partial_io(bvec))
-			kunmap_atomic(user_mem);
-		zram->stats.pages_zero++;
-		zram_set_flag(zram, index, ZRAM_ZERO);
 		ret = 0;
 		goto out;
 	}
@@ -510,7 +501,6 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 
 	/* Update stats */
 	atomic64_add(clen, &zram->stats.compr_size);
-	zram_stat64_add(zram, &zram->stats.compr_size, clen);
 	zram->stats.pages_stored++;
 	if (clen <= PAGE_SIZE / 2)
 		zram->stats.good_compress++;
