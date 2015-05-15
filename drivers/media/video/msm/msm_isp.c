@@ -152,6 +152,12 @@ int msm_isp_vfe_msg_to_img_mode(struct msm_cam_media_controller *pmctl,
 	} else if (VFE_MSG_V2X_LIVESHOT_PRIMARY == vfe_msg) {
 		image_mode = MSM_V4L2_EXT_CAPTURE_MODE_V2X_LIVESHOT;
 	/* LGE_CHANGE_E : sungmin.cho@lge.com 2012-12-07 [CASE 1043026] QCT patch, Live snapshot crash */
+			image_mode = -1;
+	} else if (vfe_msg == VFE_MSG_OUTPUT_TERTIARY2) {
+		if (pmctl->vfe_output_mode & VFE_OUTPUTS_RDI1)
+			image_mode = MSM_V4L2_EXT_CAPTURE_MODE_RDI1;
+		else
+			image_mode = -1;
 	} else
 		image_mode = -1;
 
@@ -362,6 +368,44 @@ static int msm_isp_notify_vfe(struct v4l2_subdev *sd,
 			BUG_ON(msgid < 0);
 			msm_mctl_buf_done(pmctl, msgid,
 				&buf, isp_output->frameCounter);
+		if (isp_output->buf.image_mode < 0) {
+			switch (isp_output->output_id) {
+			case MSG_ID_OUTPUT_P:
+				msgid = VFE_MSG_OUTPUT_P;
+				break;
+			case MSG_ID_OUTPUT_V:
+				msgid = VFE_MSG_OUTPUT_V;
+				break;
+			case MSG_ID_OUTPUT_T:
+				msgid = VFE_MSG_OUTPUT_T;
+				break;
+			case MSG_ID_OUTPUT_S:
+				msgid = VFE_MSG_OUTPUT_S;
+				break;
+			case MSG_ID_OUTPUT_PRIMARY:
+				msgid = VFE_MSG_OUTPUT_PRIMARY;
+				break;
+			case MSG_ID_OUTPUT_SECONDARY:
+				msgid = VFE_MSG_OUTPUT_SECONDARY;
+				break;
+			case MSG_ID_OUTPUT_TERTIARY1:
+				msgid = VFE_MSG_OUTPUT_TERTIARY1;
+				break;
+			case MSG_ID_OUTPUT_TERTIARY2:
+				msgid = VFE_MSG_OUTPUT_TERTIARY2;
+				break;
+
+			default:
+				pr_err("%s: Invalid VFE output id: %d\n",
+					   __func__, isp_output->output_id);
+				rc = -EINVAL;
+				break;
+			}
+			if (!rc)
+				image_mode =
+				msm_isp_vfe_msg_to_img_mode(pmctl, msgid);
+		} else {
+			image_mode = isp_output->buf.image_mode;
 		}
 		}
 		break;
