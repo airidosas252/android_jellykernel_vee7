@@ -1924,11 +1924,6 @@ static int msm_open(struct file *f)
 			NOTIFY_GESTURE_CAM_EVT, &ges_evt);
 
 		rc = msm_cam_server_open_session(&g_server_dev, pcam);
-		server_q_idx = msm_find_free_queue();
-		if (server_q_idx < 0)
-			return server_q_idx;
-
-		rc = msm_server_begin_session(pcam, server_q_idx);
 		if (rc < 0) {
 			pr_err("%s: cam_server_open_session failed %d\n",
 			__func__, rc);

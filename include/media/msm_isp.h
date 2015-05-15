@@ -63,9 +63,6 @@
 #define MSG_ID_OUTPUT_TERTIARY1         44
 #define MSG_ID_OUTPUT_TERTIARY2         45
 
-#define MSG_ID_OUTPUT_TERTIARY1         43
-#define MSG_ID_STOP_LS_ACK              44
-#define MSG_ID_OUTPUT_TERTIARY2         45
 
 /* ISP command IDs */
 #define VFE_CMD_DUMMY_0                                 0
@@ -335,11 +332,6 @@ struct msm_mctl_pp_frame_cmd {
 #define VFE_OUTPUTS_THUMB_AND_JPEG      BIT(10)
 #define VFE_OUTPUTS_RDI0                BIT(11)
 #define VFE_OUTPUTS_RDI1                BIT(12)
-
-struct msm_frame_info {
-	uint32_t image_mode;
-	uint32_t path;
-};
 
 #endif /*__MSM_ISP_H__*/
 

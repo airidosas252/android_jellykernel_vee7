@@ -457,9 +457,6 @@ struct msm_camera_cfg_cmd {
 #define CMD_AXI_CFG_TERT1              BIT(12)
 #define CMD_AXI_CFG_TERT2              BIT(13)
 
-#define CMD_AXI_START  0xE1
-#define CMD_AXI_STOP   0xE2
-
 /* vfe config command: config command(from config thread)*/
 struct msm_vfe_cfg_cmd {
 	int cmd_type;
@@ -710,8 +707,6 @@ struct msm_stats_buf {
 #define MSM_V4L2_EXT_CAPTURE_MODE_MAX (MSM_V4L2_EXT_CAPTURE_MODE_DEFAULT+9)
 #endif
 /* LGE_CHANGE_E : sungmin.cho@lge.com 2012-12-07 [CASE 1043026] QCT patch, Live snapshot crash */
-#define MSM_V4L2_EXT_CAPTURE_MODE_MAX (MSM_V4L2_EXT_CAPTURE_MODE_DEFAULT+9)
-
 
 #define MSM_V4L2_PID_MOTION_ISO              V4L2_CID_PRIVATE_BASE
 #define MSM_V4L2_PID_EFFECT                 (V4L2_CID_PRIVATE_BASE+1)
