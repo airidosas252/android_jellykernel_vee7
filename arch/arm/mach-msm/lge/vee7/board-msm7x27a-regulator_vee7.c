@@ -224,8 +224,8 @@ static struct proccomm_regulator_info msm7x27a_pcom_vreg_info[] = {
 	 *            name   id  supp  min uV    max uV  R   P  A  B  V  S  T*/
 /* LGE_CHANGE_S [murali.ramamaiah@lge.com] 2011-12-21: according to lge board specifications */	 
 #if 1
-	PCOM_VREG_SMP(smps1,  3, NULL,  1100000,  1100000, 0, -1, 0, 0, 0, 0, s), // +1V1_MSM_CORE1
-	PCOM_VREG_SMP(smps2,  4, NULL,  1100000,  1100000, 0, -1, 0, 0, 0, 0, s), // +1V1_MSM_CORE1
+	PCOM_VREG_SMP(smps1,  3, NULL,  1000000,  1000000, 0, -1, 0, 0, 0, 0, s), // +1V1_MSM_CORE1
+	PCOM_VREG_SMP(smps2,  4, NULL,  1000000,  1000000, 0, -1, 0, 0, 0, 0, s), // +1V1_MSM_CORE1
 	PCOM_VREG_SMP(smps3,  2, NULL,  1800000,  1800000, 0, -1, 0, 0, 0, 0, s), // +1V8_MSM_PAD
 	PCOM_VREG_SMP(smps4, 24, NULL,  2100000,  2100000, 0, -1, 0, 0, 0, 0, s),// +2V1_RFRX_1
 #if (CONFIG_LGE_PCB_REVISION >= REV_B)
